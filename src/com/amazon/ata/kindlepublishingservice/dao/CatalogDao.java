@@ -1,7 +1,9 @@
 package com.amazon.ata.kindlepublishingservice.dao;
 
+import com.amazon.ata.aws.dynamodb.DynamoDbClientProvider;
 import com.amazon.ata.kindlepublishingservice.dynamodb.models.CatalogItemVersion;
 import com.amazon.ata.kindlepublishingservice.exceptions.BookNotFoundException;
+import com.amazon.ata.kindlepublishingservice.exceptions.UnableToRemoveBookException;
 import com.amazon.ata.kindlepublishingservice.publishing.KindleFormattedBook;
 import com.amazon.ata.kindlepublishingservice.utils.KindlePublishingUtils;
 
@@ -10,6 +12,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import javax.inject.Inject;
 
 public class CatalogDao {
@@ -26,12 +29,43 @@ public class CatalogDao {
         this.dynamoDbMapper = dynamoDbMapper;
     }
 
+
+    // Soft Delete
+    public void removeBookFromCatalog(String bookId) {
+        CatalogItemVersion book = getLatestVersionOfBook(bookId);
+
+        if (book == null || book.isInactive()) {
+            throw new BookNotFoundException(String.format("No book found for id: %s", bookId));
+        }
+
+        book.setBookId(bookId);
+        book.setInactive(true);
+        try {
+            dynamoDbMapper.save(book);
+        } catch (Exception e) {
+            throw new UnableToRemoveBookException("Unable to remove the book from the catalog");
+        }
+    }
+
+//        CatalogItemVersion catalogIV = dynamoDbMapper.load(CatalogItemVersion.class, bookId);
+//
+//        if (Objects.isNull(catalogIV)) {
+//            throw new BookNotFoundException("Book with " + bookId + " was not found.");
+//        }
+//            if(!catalogIV.isInactive()) {
+//                catalogIV.setInactive(true);
+//                dynamoDbMapper.save(catalogIV);
+//            }
+//        return catalogIV;
+//    }
+
     /**
      * Returns the latest version of the book from the catalog corresponding to the specified book id.
      * Throws a BookNotFoundException if the latest version is not active or no version is found.
      * @param bookId Id associated with the book.
      * @return The corresponding CatalogItem from the catalog table.
      */
+
     public CatalogItemVersion getBookFromCatalog(String bookId) {
         CatalogItemVersion book = getLatestVersionOfBook(bookId);
 

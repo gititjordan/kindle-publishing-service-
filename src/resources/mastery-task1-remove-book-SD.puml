@@ -1,1 +1,28 @@
 PARTICIPANTS: use this file for creating the remove book from catalog diagram in mastery task 01
+@startuml
+!pragma layout smetana
+
+class BookNotFoundException {
+
+}
+
+class RemoveBookFromCatalogResponse {
+
+}
+class RemoveBookFromCatalogActivity {
+execute() : RemoveBookFromCatalogResponse
+execute(RemoveBookFromCatalogRequest)
+removeBookFromCatalog()
+}
+class SubmitBookForPublishingActivity{
+
+}
+
+
+
+RemoveBookFromCatalogActivity -->  CatalogDao
+GetBookActivity --|> RecommendationsServiceClient
+SubmitBookForPublishingActivity --|> PublishingStatusDao
+
+
+@enduml
