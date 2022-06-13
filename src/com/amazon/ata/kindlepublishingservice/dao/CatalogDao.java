@@ -72,8 +72,8 @@ public class CatalogDao {
         if (book == null || book.isInactive()) {
             throw new BookNotFoundException(String.format("No book found for id: %s", bookId));
         }
-
         return book;
+
     }
 
     // Returns null if no version exists for the provided bookId
