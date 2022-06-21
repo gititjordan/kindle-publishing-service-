@@ -123,4 +123,14 @@ public class SubmitBookForPublishingRequest {
 
         public SubmitBookForPublishingRequest build() { return new SubmitBookForPublishingRequest(this); }
     }
+//    @Override
+//    public String toString() {
+//        return "SubmitBookForPublishingRequest{" +
+//                "bookId='" + bookId + '\'' +
+//                ", title='" + title + '\'' +
+//                ", author='" + author + '\'' +
+//                ", text='" + text + '\'' +
+//                ", genre='" + genre + '\'' +
+//                '}';
+//    }
 }
