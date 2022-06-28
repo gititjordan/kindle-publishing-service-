@@ -51,27 +51,7 @@ public class PublishingStatusDao {
     }
 
 
-    public List<PublishingStatusItem> getPublishingStatus(String publishingStatusId) {
 
-        if (publishingStatusId == null) {
-            throw new ValidationException
-                    (String.format("The publishing status Id:  %s doesn't exist", publishingStatusId));
-        }
-
-        PublishingStatusItem publishingStatusItem = new PublishingStatusItem();
-        publishingStatusItem.setPublishingRecordId(publishingStatusId);
-
-        DynamoDBQueryExpression<PublishingStatusItem> queryExpression = new DynamoDBQueryExpression()
-                .withHashKeyValues(publishingStatusItem)
-                .withScanIndexForward(false);
-
-        List<PublishingStatusItem> publishingStatusItemList = dynamoDbMapper.query(PublishingStatusItem.class, queryExpression);
-        if (publishingStatusItemList == null || publishingStatusItemList.isEmpty()) {
-            throw new PublishingStatusNotFoundException(String.format("The item with the %s doesn't exist", publishingStatusId));
-        }
-
-        return publishingStatusItemList;
-    }
 
 
 
@@ -92,9 +72,11 @@ public class PublishingStatusDao {
                                                     String message) {
         String statusMessage = KindlePublishingUtils.generatePublishingStatusMessage(publishingRecordStatus);
         if (StringUtils.isNotBlank(message)) {
-            statusMessage = statusMessage +
-                    ADDITIONAL_NOTES_PREFIX +
-                    message;
+            statusMessage = new StringBuffer()
+                    .append(statusMessage)
+                    .append(ADDITIONAL_NOTES_PREFIX)
+                    .append(message)
+                    .toString();
         }
 
         PublishingStatusItem item = new PublishingStatusItem();
@@ -104,5 +86,27 @@ public class PublishingStatusDao {
         item.setBookId(bookId);
         dynamoDbMapper.save(item);
         return item;
+    }
+
+    public List<PublishingStatusItem> getPublishingStatus(String publishingStatusId) {
+
+        if (publishingStatusId == null) {
+            throw new ValidationException
+                    (String.format("The publishing status Id:  %s doesn't exist", publishingStatusId));
+        }
+
+        PublishingStatusItem publishingStatusItem = new PublishingStatusItem();
+        publishingStatusItem.setPublishingRecordId(publishingStatusId);
+
+        DynamoDBQueryExpression<PublishingStatusItem> queryExpression = new DynamoDBQueryExpression()
+                .withHashKeyValues(publishingStatusItem)
+                .withScanIndexForward(false);
+
+        List<PublishingStatusItem> publishingStatusItemList = dynamoDbMapper.query(PublishingStatusItem.class, queryExpression);
+        if (publishingStatusItemList == null || publishingStatusItemList.isEmpty()) {
+            throw new PublishingStatusNotFoundException(String.format("The item with the %s doesn't exist", publishingStatusId));
+        }
+
+        return publishingStatusItemList;
     }
 }

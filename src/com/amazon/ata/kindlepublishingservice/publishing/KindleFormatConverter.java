@@ -1,6 +1,7 @@
 package com.amazon.ata.kindlepublishingservice.publishing;
 
 import com.amazon.ata.kindlepublishing.utils.KindleConversionUtils;
+import com.amazon.ata.kindlepublishingservice.dynamodb.models.CatalogItemVersion;
 
 /**
  * Contains methods that help convert a book to its Kindle format.
@@ -23,4 +24,6 @@ public final class KindleFormatConverter {
             .withBookId(publishRequest.getBookId())
             .build();
     }
-}
+
+    }
+

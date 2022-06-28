@@ -60,7 +60,7 @@ public class SubmitBookForPublishingActivity {
 
         final BookPublishRequest bookPublishRequest = BookPublishRequestConverter.toBookPublishRequest(request);
         bookPublishRequestManager.addBookPublishRequest(bookPublishRequest);
-
+ 
         PublishingStatusItem item =  publishingStatusDao.setPublishingStatus(bookPublishRequest.getPublishingRecordId(),
                 PublishingRecordStatus.QUEUED,
                 bookPublishRequest.getBookId());
