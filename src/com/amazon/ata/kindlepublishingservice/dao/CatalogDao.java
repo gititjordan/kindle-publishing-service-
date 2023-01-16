@@ -75,6 +75,12 @@ public class CatalogDao {
         return book;
 
     }
+    public void validateBookExists(String bookId) {
+        CatalogItemVersion book = getLatestVersionOfBook(bookId);
+        if (book == null) {
+            throw new BookNotFoundException(String.format("No book found for id: %s", bookId));
+        }
+    }
 
     // Returns null if no version exists for the provided bookId
     private CatalogItemVersion getLatestVersionOfBook(String bookId) {
@@ -92,5 +98,31 @@ public class CatalogDao {
             return null;
         }
         return results.get(0);
+    }
+
+    public CatalogItemVersion createOrUpdateBook(KindleFormattedBook formattedBook) {
+        if (formattedBook.getBookId() == null) {
+            CatalogItemVersion newBook = new CatalogItemVersion();
+            newBook.setBookId(KindlePublishingUtils.generateBookId());
+            newBook.setVersion(1);
+            newBook.setAuthor(formattedBook.getAuthor());
+            newBook.setTitle(formattedBook.getTitle());
+            newBook.setGenre(formattedBook.getGenre());
+            newBook.setInactive(false);
+            newBook.setText(formattedBook.getText());
+            dynamoDbMapper.save(newBook);
+            return getLatestVersionOfBook(newBook.getBookId());
+        } else {
+            CatalogItemVersion updateBook = getLatestVersionOfBook(formattedBook.getBookId());
+            if (updateBook == null) {
+                throw new BookNotFoundException("The book does not exist");
+            }
+            updateBook.setInactive(true);
+            dynamoDbMapper.save(updateBook);
+            updateBook.setVersion(updateBook.getVersion() + 1);
+            updateBook.setInactive(false);
+            dynamoDbMapper.save(updateBook);
+            return getLatestVersionOfBook(updateBook.getBookId());
+        }
     }
 }

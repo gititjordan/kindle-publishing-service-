@@ -7,10 +7,12 @@ import com.amazon.ata.kindlepublishingservice.utils.KindlePublishingUtils;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import javax.inject.Inject;
+import javax.validation.ValidationException;
 
 /**
  * Accesses the Publishing Status table.
@@ -30,6 +32,9 @@ public class PublishingStatusDao {
         this.dynamoDbMapper = dynamoDbMapper;
     }
 
+
+
+
     /**
      * Updates the publishing status table for the given publishingRecordId with the provided
      * publishingRecordStatus. If the bookId is provided it will also be stored in the record.
@@ -45,17 +50,22 @@ public class PublishingStatusDao {
         return setPublishingStatus(publishingRecordId, publishingRecordStatus, bookId, null);
     }
 
-    /**
-     * Updates the publishing status table for the given publishingRecordId with the provided
-     * publishingRecordStatus. If the bookId is provided it will also be stored in the record. If
-     * a message is provided, it will be appended to the publishing status message in the datastore.
-     *
-     * @param publishingRecordId The id of the record to update
-     * @param publishingRecordStatus The PublishingRecordStatus to save into the table.
-     * @param bookId The id of the book associated with the request, may be null
-     * @param message additional notes stored with the status
-     * @return The stored PublishingStatusItem.
-     */
+
+
+
+
+
+        /**
+         * Updates the publishing status table for the given publishingRecordId with the provided
+         * publishingRecordStatus. If the bookId is provided it will also be stored in the record. If
+         * a message is provided, it will be appended to the publishing status message in the datastore.
+         *
+         * @param publishingRecordId The id of the record to update
+         * @param publishingRecordStatus The PublishingRecordStatus to save into the table.
+         * @param bookId The id of the book associated with the request, may be null
+         * @param message additional notes stored with the status
+         * @return The stored PublishingStatusItem.
+         */
     public PublishingStatusItem setPublishingStatus(String publishingRecordId,
                                                     PublishingRecordStatus publishingRecordStatus,
                                                     String bookId,
@@ -63,10 +73,10 @@ public class PublishingStatusDao {
         String statusMessage = KindlePublishingUtils.generatePublishingStatusMessage(publishingRecordStatus);
         if (StringUtils.isNotBlank(message)) {
             statusMessage = new StringBuffer()
-                .append(statusMessage)
-                .append(ADDITIONAL_NOTES_PREFIX)
-                .append(message)
-                .toString();
+                    .append(statusMessage)
+                    .append(ADDITIONAL_NOTES_PREFIX)
+                    .append(message)
+                    .toString();
         }
 
         PublishingStatusItem item = new PublishingStatusItem();
@@ -76,5 +86,27 @@ public class PublishingStatusDao {
         item.setBookId(bookId);
         dynamoDbMapper.save(item);
         return item;
+    }
+
+    public List<PublishingStatusItem> getPublishingStatus(String publishingStatusId) {
+
+        if (publishingStatusId == null) {
+            throw new ValidationException
+                    (String.format("The publishing status Id:  %s doesn't exist", publishingStatusId));
+        }
+
+        PublishingStatusItem publishingStatusItem = new PublishingStatusItem();
+        publishingStatusItem.setPublishingRecordId(publishingStatusId);
+
+        DynamoDBQueryExpression<PublishingStatusItem> queryExpression = new DynamoDBQueryExpression()
+                .withHashKeyValues(publishingStatusItem)
+                .withScanIndexForward(false);
+
+        List<PublishingStatusItem> publishingStatusItemList = dynamoDbMapper.query(PublishingStatusItem.class, queryExpression);
+        if (publishingStatusItemList == null || publishingStatusItemList.isEmpty()) {
+            throw new PublishingStatusNotFoundException(String.format("The item with the %s doesn't exist", publishingStatusId));
+        }
+
+        return publishingStatusItemList;
     }
 }

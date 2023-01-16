@@ -51,4 +51,14 @@ public class PublishingStatusItem {
     public void setBookId(String bookId) {
         this.bookId = bookId;
     }
+
+    @Override
+    public String toString() {
+        return "PublishingStatusItem{" +
+                "publishingRecordId='" + publishingRecordId + '\'' +
+                ", status=" + status +
+                ", statusMessage='" + statusMessage + '\'' +
+                ", bookId='" + bookId + '\'' +
+                '}';
+    }
 }
