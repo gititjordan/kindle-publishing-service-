@@ -1,1 +1,64 @@
 PARTICIPANTS: use this file for creating the class diagram in mastery task 01
+PARTICIPANTS: use this file for creating the remove book from catalog diagram in mastery task 01
+@startuml
+!pragma layout smetana
+
+class GetBookActivity {
+GetBookResponse
+execute() : GetBookResponse
+execute(GetBookRequest)
+
+}
+
+class GetPublishingStatusActivity {
+
+}
+class RemoveBookFromCatalogActivity {
+execute() : RemoveBookFromCatalogResponse
+execute(RemoveBookFromCatalogRequest)
+}
+class SubmitBookForPublishingActivity{
+execute() : SubmitBookForPublishingResponse
+execute(SubmitBookForPublishingRequest)
+}
+class RecommendationsServiceClient {
+
+}
+class CatalogItemVersion {
+@DynamoDBHashKey bookId : String
+@DynamoDBRangeKey version : int
+inactive : boolean
+author : String
+text : String
+genre : BookGenre
+}
+
+class CatalogDao {
+dynamoDbMapper : DynamoDBMapper
+
+}
+class PublishingStatusItem {
+-@DynamoDBHashKey publishingRecordId : String
+-@DynamoDBRangeKey status : PublishingRecordStatus
+-statusMessage : String
+-bookId : String
+}
+class BookNotFoundException {
+
+}
+
+class PublishingStatusDao {
+dynamoDbMapper : DynamoDBMapper
+
+}
+
+
+
+GetBookActivity o-- CatalogDao
+GetBookActivity o-- RecommendationsServiceClient
+SubmitBookForPublishingActivity o--  PublishingStatusDao
+CatalogItemVersion o-- CatalogDao
+PublishingStatusItem o-- PublishingStatusDao
+CatalogDao o-- BookNotFoundException
+
+@enduml
